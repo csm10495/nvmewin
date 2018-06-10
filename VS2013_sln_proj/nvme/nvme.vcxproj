@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Win8.1 Debug|Win32">
       <Configuration>Win8.1 Debug</Configuration>
@@ -70,62 +70,62 @@
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Win8.1 Debug|Win32'">
     <TargetVersion>WindowsV6.3</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Debug|Win32'" Label="Configuration">
     <TargetVersion>Windows8</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Win8.1 Release|Win32'">
     <TargetVersion>WindowsV6.3</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Release|Win32'" Label="Configuration">
     <TargetVersion>Windows8</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|Win32'" Label="Configuration">
     <TargetVersion>Windows7</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Release|Win32'" Label="Configuration">
     <TargetVersion>Windows7</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Win8.1 Debug|x64'">
     <TargetVersion>WindowsV6.3</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Debug|x64'" Label="Configuration">
     <TargetVersion>Windows8</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Win8.1 Release|x64'">
     <TargetVersion>WindowsV6.3</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Release|x64'" Label="Configuration">
     <TargetVersion>Windows8</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|x64'" Label="Configuration">
     <TargetVersion>Windows7</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Release|x64'" Label="Configuration">
     <TargetVersion>Windows7</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>WindowsKernelModeDriver8.1</PlatformToolset>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -140,8 +140,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Release|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -165,8 +165,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Release|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
       <WppTraceFunction>StorPortDebugPrint(LEVEL,MSG,...)</WppTraceFunction>
@@ -192,8 +192,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Release|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppTraceFunction>StorPortDebugPrint(LEVEL,MSG,...)</WppTraceFunction>
@@ -217,8 +217,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;MSWINDOWS__;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;MSWINDOWS__;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -244,8 +244,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Debug|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
       <WppTraceFunction>StorPortDebugPrint(LEVEL,MSG,...)</WppTraceFunction>
@@ -277,8 +277,8 @@
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Debug|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -304,8 +304,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Release|Win32'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -331,8 +331,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Release|Win32'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -358,8 +358,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Debug|Win32'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -382,8 +382,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Debug|Win32'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -406,8 +406,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Release|Win32'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -433,8 +433,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|Win32'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
