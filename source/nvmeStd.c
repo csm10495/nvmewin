@@ -786,6 +786,13 @@ BOOLEAN NVMeInitialize(
 			}
 
 			Status = StorPortInitializePerfOpts(pAE, FALSE, &perfData);
+
+			if (Status != STOR_STATUS_SUCCESS) {
+				StorPortDebugPrint(INFO,
+					"NVMeInitialize: Status = %d.\n", (int)Status);
+			}
+
+
 			ASSERT(STOR_STATUS_SUCCESS == Status);
 			if (STOR_STATUS_SUCCESS == Status) {
 				pAE->IsMsiMappingComplete = TRUE;

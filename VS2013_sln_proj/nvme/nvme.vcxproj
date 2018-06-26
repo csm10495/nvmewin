@@ -141,7 +141,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Release|x64'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -166,7 +166,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Release|x64'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
       <WppTraceFunction>StorPortDebugPrint(LEVEL,MSG,...)</WppTraceFunction>
@@ -193,7 +193,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Release|x64'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppTraceFunction>StorPortDebugPrint(LEVEL,MSG,...)</WppTraceFunction>
@@ -218,7 +218,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|x64'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;MSWINDOWS__;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;MSWINDOWS__;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -245,7 +245,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Debug|x64'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
       <WppTraceFunction>StorPortDebugPrint(LEVEL,MSG,...)</WppTraceFunction>
@@ -278,7 +278,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Debug|x64'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS;_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -305,7 +305,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Release|Win32'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -332,7 +332,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Release|Win32'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -359,7 +359,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8.1 Debug|Win32'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -383,7 +383,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win8 Debug|Win32'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -407,7 +407,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Release|Win32'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>
@@ -434,7 +434,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|Win32'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__KERNEL_;__MSWINDOWS__;_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);ENABLE_CSM_IOCTL;CSM_VIRTUALBOX_WORKAROUND</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <WppEnabled>true</WppEnabled>
       <WppKernelMode>true</WppKernelMode>

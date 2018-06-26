@@ -1509,9 +1509,16 @@ VOID NVMeSetFeaturesCompletion(
         pNVMeCmd->CDW0.OPC == ADMIN_SET_FEATURES        &&
         pSetFeaturesCDW10->FID == INTERRUPT_COALESCING ) {
         if (pCplEntry->DW3.SF.SC != 0) {
+
+// helps out with Virtualbox Ticket 17228
+#ifdef CSM_VIRTUALBOX_WORKAROUND
+			StorPortDebugPrint(WARNING,
+				"NVMeSetFeaturesCompletion: in Ignoring failure to do ADMIN_SET_FEATURES/INTERRUPT_COALESCING. DW3.SF.SC == %u\n", pCplEntry->DW3.SF.SC);
+#else
             NVMeDriverFatalError(pAE,
                                 (1 << START_STATE_INT_COALESCING_FAILURE));
         } else {
+#endif
             pAE->DriverState.InterruptCoalescingSet = TRUE;
 
             /* Reset the counter and keep tihs state to set more features */
