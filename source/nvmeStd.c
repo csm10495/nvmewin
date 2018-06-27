@@ -2187,9 +2187,59 @@ void NVMeStartIoProcessIoctl(
 			pSrb->SrbStatus = SRB_STATUS_SUCCESS;
 			IO_StorPortNotification(RequestComplete, pAdapterExtension, pSrb);
 			return;
-			break;
 		case NVME_NO_LOOK_PASS_THROUGH:
 			break;
+		case NVME_IC_MN_OVERRIDE_CONTROL:
+			StorPortDebugPrint(INFO,
+				"NVMeStartIoProcessIoctl: in NVME_IC_MN_OVERRIDE_CONTROL now.\n");
+			pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_SUCCESS;
+
+			if (pNvmePtIoctl->Direction == NVME_FROM_HOST_TO_DEV && pNvmePtIoctl->DataBufferLen >= sizeof(pAdapterExtension->ModelOverride))
+			{
+				// Handle writes to write the register data
+				StorPortDebugPrint(INFO,
+					"NVMeStartIoProcessIoctl: About to set internal model number override\n");
+				StorPortCopyMemory(&pAdapterExtension->ModelOverride, pNvmePtIoctl->DataBuffer, sizeof(pAdapterExtension->ModelOverride));
+				pAdapterExtension->UseModelOverride = TRUE;
+			}
+			else if (pNvmePtIoctl->Direction == NVME_FROM_DEV_TO_HOST && pNvmePtIoctl->ReturnBufferLen >= sizeof(NVME_PASS_THROUGH_IOCTL) + sizeof(pAdapterExtension->ModelOverride))
+			{
+				// Handle reads to read the register data
+				StorPortDebugPrint(INFO,
+					"NVMeStartIoProcessIoctl: About to get internal model number override\n");
+				StorPortCopyMemory(pNvmePtIoctl->DataBuffer, &pAdapterExtension->ModelOverride, sizeof(pAdapterExtension->ModelOverride));
+			}
+			else if (pNvmePtIoctl->Direction >= NVME_BI_DIRECTION || pNvmePtIoctl->Direction == NVME_NO_DATA_TX)
+			{
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INVALID_DIRECTION_SPECIFIED;
+			}
+			else if (pNvmePtIoctl->Direction == NVME_FROM_HOST_TO_DEV && pNvmePtIoctl->DataBufferLen < sizeof(pAdapterExtension->ModelOverride))
+			{
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INSUFFICIENT_IN_BUFFER;
+			}
+			else if (pNvmePtIoctl->Direction == NVME_FROM_DEV_TO_HOST && pNvmePtIoctl->ReturnBufferLen < sizeof(NVME_PASS_THROUGH_IOCTL) + sizeof(pAdapterExtension->ModelOverride))
+			{
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INSUFFICIENT_OUT_BUFFER;
+			}
+			else
+			{
+				// No idea what happened
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INTERNAL_ERROR;
+			}
+			// Tell StorPort that everything is fine to give the user back a failing return code on failure (or 0 on success)
+			pSrb->SrbStatus = SRB_STATUS_SUCCESS;
+			IO_StorPortNotification(RequestComplete, pAdapterExtension, pSrb);
+			return;
+		case NVME_IC_MN_OVERRIDE_RESET:
+			StorPortDebugPrint(INFO,
+				"NVMeStartIoProcessIoctl: in NVME_IC_MN_OVERRIDE_RESET now.\n");
+			pAdapterExtension->UseModelOverride = FALSE;
+			pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_SUCCESS;
+
+			// Tell StorPort that everything is fine to give the user back a failing return code on failure (or 0 on success)
+			pSrb->SrbStatus = SRB_STATUS_SUCCESS;
+			IO_StorPortNotification(RequestComplete, pAdapterExtension, pSrb);
+			return;
 #endif
 		default:
 			pSrb->SrbStatus = SRB_STATUS_INVALID_REQUEST;
@@ -3019,6 +3069,8 @@ BOOLEAN NVMeHandleNVMePassthrough(
 
 	PNVME_PASS_THROUGH_IOCTL pNvmePtIoctl = (PNVME_PASS_THROUGH_IOCTL)GET_DATA_BUFFER(pSrb);
 
+	pNvmeCmdDW0 = (PNVMe_COMMAND_DWORD_0)&pNvmePtIoctl->NVMeCmd[0];
+
 	/* Adjust the SRB transfer length */
 	if (pNvmePtIoctl->Direction == NVME_FROM_HOST_TO_DEV) {
 		SET_DATA_LENGTH(pSrb, sizeof(NVME_PASS_THROUGH_IOCTL));
@@ -3027,11 +3079,25 @@ BOOLEAN NVMeHandleNVMePassthrough(
 		SET_DATA_LENGTH(pSrb, pNvmePtIoctl->ReturnBufferLen);
 	}
 
+
+#ifdef ENABLE_CSM_IOCTL
+	// If the command was Identify Controller and we have a model override, override it in the return data
+	PADMIN_IDENTIFY_COMMAND_DW10 pDw10 = (PADMIN_IDENTIFY_COMMAND_DW10)pNvmePtIoctl->NVMeCmd[10];
+	PNVME_DEVICE_EXTENSION pDevExt = (PNVME_DEVICE_EXTENSION)pNVMeDevExt;
+
+	if (pNvmeCmdDW0->OPC == ADMIN_IDENTIFY && pDw10->CNS == IDENTIFY_CNTLR && pDevExt->UseModelOverride)
+	{
+		StorPortDebugPrint(INFO,
+			"NVMeHandleNVMePassthrough: About to override model in IC.MN.\n");
+		memset(&((ADMIN_IDENTIFY_CONTROLLER*)pNvmePtIoctl->DataBuffer)->MN, 0, sizeof(((ADMIN_IDENTIFY_CONTROLLER*)pNvmePtIoctl->DataBuffer)->MN));
+		memcpy(&((ADMIN_IDENTIFY_CONTROLLER*)pNvmePtIoctl->DataBuffer)->MN, &pDevExt->ModelOverride, sizeof(pDevExt->ModelOverride));
+	}
+#endif
+
 	/* Copy the completion entry to NVME_PASS_THROUGH_IOCTL structure */
 	StorPortCopyMemory((PVOID)pNvmePtIoctl->CplEntry,
 		(PVOID)pSrbExtension->pCplEntry,
 		sizeof(NVMe_COMPLETION_QUEUE_ENTRY));
-	pNvmeCmdDW0 = (PNVMe_COMMAND_DWORD_0)&pNvmePtIoctl->NVMeCmd[0];
 
 	switch (pNvmeCmdDW0->OPC) {
 	case ADMIN_NAMESPACE_MANAGEMENT:

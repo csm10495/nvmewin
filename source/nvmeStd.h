@@ -1081,6 +1081,11 @@ typedef struct _nvme_device_extension
 	PVOID Timerhandle;
 #endif
 
+#ifdef ENABLE_CSM_IOCTL
+	/* For overriding the model number in Identify Controller calls*/
+	CHAR ModelOverride[40];
+	BOOLEAN UseModelOverride;
+#endif
 } NVME_DEVICE_EXTENSION, *PNVME_DEVICE_EXTENSION;
 
 #pragma pack(1)
