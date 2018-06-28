@@ -15,13 +15,28 @@
 
 #define DBG(thing) if (debug) {fprintf(stderr, "%-35s = 0x%08x (%-8u) \n", #thing, thing, thing);}
 
-bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWORD DW13, DWORD DW14, DWORD DW15, bool nvm,
-	DWORD timeout, DWORD dataDirection, DWORD dataTransferSize, std::string dataFile, std::string devicePath, bool debug, bool noLook)
+std::string getControlCodeString(DWORD controlCode)
 {
-	bool retVal = true;
-	Handle handle(devicePath);
+	switch (controlCode)
+	{
+	case NVME_PASS_THROUGH_SRB_IO_CODE:
+		return "NVME_PASS_THROUGH_SRB_IO_CODE";
+	case NVME_RESET_DEVICE:
+		return "NVME_RESET_DEVICE";
+	case NVME_NO_LOOK_PASS_THROUGH:
+		return "NVME_NO_LOOK_PASS_THROUGH";
+	case NVME_CONTROLLER_REGISTERS:
+		return "NVME_CONTROLLER_REGISTERS";
+	}
+	return "Unknown";
+}
 
-	DWORD passThruBufferSize = sizeof(NVME_PASS_THROUGH_IOCTL) + dataTransferSize;
+NVME_PASS_THROUGH_IOCTL* __getPassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWORD DW13, DWORD DW14, DWORD DW15, bool nvm,
+	DWORD timeout, DWORD dataDirection, DWORD dataTransferSize, std::string dataFile, bool debug, DWORD controlCode, DWORD& passThruBufferSize)
+{
+	bool shouldFree = false; // free on error, return NULL
+
+	passThruBufferSize = sizeof(NVME_PASS_THROUGH_IOCTL) + dataTransferSize;
 	BYTE* passThruBuffer = (BYTE*)calloc(passThruBufferSize, 1);
 	NVME_PASS_THROUGH_IOCTL* passthru = (NVME_PASS_THROUGH_IOCTL*)passThruBuffer;
 	DBG(passThruBufferSize);
@@ -30,19 +45,14 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 	passthru->SrbIoCtrl.HeaderLength = sizeof(SRB_IO_CONTROL);
 	memcpy(passthru->SrbIoCtrl.Signature, NVME_SIG_STR, NVME_SIG_STR_LEN);
 	passthru->SrbIoCtrl.Timeout = timeout;
-	if (noLook)
-	{
-		passthru->SrbIoCtrl.ControlCode = NVME_NO_LOOK_PASS_THROUGH;
-		DBG(NVME_NO_LOOK_PASS_THROUGH);
-	}
-	else
-	{
-		passthru->SrbIoCtrl.ControlCode = NVME_PASS_THROUGH_SRB_IO_CODE;
-		DBG(NVME_PASS_THROUGH_SRB_IO_CODE);
-	}
+	passthru->SrbIoCtrl.ControlCode = controlCode;
 	passthru->SrbIoCtrl.Length = passThruBufferSize - sizeof(SRB_IO_CONTROL);
 	DBG(passthru->SrbIoCtrl.Timeout);
 	DBG(passthru->SrbIoCtrl.ControlCode);
+	if (debug)
+	{
+		fprintf(stderr, "%-35s = %s\n", "ControlCode Parsing", getControlCodeString(passthru->SrbIoCtrl.ControlCode).c_str());
+	}
 	DBG(passthru->SrbIoCtrl.Length);
 
 	// Setup NVMe Command
@@ -73,6 +83,13 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 	DBG(passthru->ReturnBufferLen);
 	DBG(passthru->DataBufferLen);
 
+	if (passthru->Direction == NVME_BI_DIRECTION)
+	{
+		fprintf(stderr, "Bi directional is not supported.\n");
+		shouldFree = true;
+		goto done;
+	}
+
 	if (passthru->Direction == NVME_FROM_HOST_TO_DEV)
 	{
 		passthru->DataBufferLen = dataTransferSize;
@@ -82,7 +99,7 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 			if (!file)
 			{
 				fprintf(stderr, "Unable to open file: %s\n", dataFile.c_str());
-				retVal = false;
+				shouldFree = true;
 				goto done;
 			}
 
@@ -90,27 +107,35 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 			if (fread(whereDataGoes, 1, passthru->DataBufferLen, file) != passthru->DataBufferLen)
 			{
 				fprintf(stderr, "Unable to read the expected amount of data (%d bytes) from file: %s\n", passthru->DataBufferLen, dataFile.c_str());
-				retVal = false;
+				shouldFree = true;
 				goto done;
 			}
 			fclose(file);
 		}
-
 	}
-	else if (passthru->Direction == NVME_BI_DIRECTION)
+
+done:
+	if (shouldFree)
 	{
-		fprintf(stderr, "Bi directional is not supported.\n");
-		retVal = false;
-		goto done;
+		free(passthru);
+		passthru = NULL;
 	}
 
+	return passthru;
+}
+
+#define GET_NVME_PASSTHRU_IOCTL(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize) __getPassthru(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize); {
+#define FREE_NVME_PASSTHRU_IOCTL(p) free(p);}
+
+bool callDeviceIoControl(HANDLE handle, NVME_PASS_THROUGH_IOCTL* passthru, DWORD passThruBufferSize, bool debug)
+{
 	DWORD bytesReturned;
-	retVal = DeviceIoControl(
-		handle.getHandle(),
+	bool retVal = DeviceIoControl(
+		handle,
 		IOCTL_SCSI_MINIPORT,
-		passThruBuffer,
+		passthru,
 		passThruBufferSize,
-		passThruBuffer,
+		passthru,
 		passThruBufferSize,
 		&bytesReturned,
 		NULL
@@ -144,6 +169,14 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 		goto done;
 	}
 
+done:
+	return retVal;
+}
+
+bool processOutputData(NVME_PASS_THROUGH_IOCTL* passthru, std::string dataFile)
+{
+	BYTE* passThruBuffer = (BYTE*)passthru;
+	bool retVal = true;
 	// Command succeeded!
 	if (passthru->Direction == NVME_FROM_DEV_TO_HOST)
 	{
@@ -162,6 +195,7 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 			if (fwrite(whereDataGoes, 1, passthru->ReturnBufferLen, file) != passthru->ReturnBufferLen)
 			{
 				fprintf(stderr, "Unable to write the expected amount of data (%d bytes) to file: %s\n", passthru->ReturnBufferLen, dataFile.c_str());
+				fclose(file);
 				retVal = false;
 				goto done;
 			}
@@ -180,7 +214,38 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 	}
 
 done:
-	free(passThruBuffer);
+	return retVal;
+}
+
+bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWORD DW13, DWORD DW14, DWORD DW15, bool nvm,
+	DWORD timeout, DWORD dataDirection, DWORD dataTransferSize, std::string dataFile, std::string devicePath, bool debug, bool noLook)
+{
+	bool retVal = true;
+	Handle handle(devicePath);
+
+	DWORD controlCode = NVME_PASS_THROUGH_SRB_IO_CODE;
+	if (noLook)
+		controlCode = NVME_NO_LOOK_PASS_THROUGH;
+	
+	DWORD passThruBufferSize = 0;
+	NVME_PASS_THROUGH_IOCTL* passthru = GET_NVME_PASSTHRU_IOCTL(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize);
+	BYTE* passThruBuffer = (BYTE*)passthru;
+
+	if (!passthru)
+	{
+		retVal = false;
+		goto done;
+	}
+	
+	retVal = callDeviceIoControl(handle.getHandle(), passthru, passThruBufferSize, debug);
+
+	if (retVal)
+	{
+		processOutputData(passthru, dataFile);
+	}
+
+done:
+	FREE_NVME_PASSTHRU_IOCTL(passthru);
 
 	DBG(retVal);
 	return retVal;
