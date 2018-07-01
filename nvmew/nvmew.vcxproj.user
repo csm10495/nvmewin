@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--devicePath "\\.\SCSI1:" --DW0 0x80 --DW10 1 --DW1 0 --dataDirection 0 --debug  --timeout 60</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--devicePath \\.\SCSI1:</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--devicePath "\\.\SCSI1:" --DW0 6 --DW10 1 --dataDirection 2 --dataTransferSize 4096 --dataFile "a.bin"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--devicePath \\.\SCSI1:</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>--devicePath "\\.\SCSI1:" --DW0 6 --DW10 1 --dataDirection 2 --dataTransferSize 4096 --dataFile "a.bin"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--devicePath \\.\SCSI1:</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>--devicePath "\\.\SCSI1:" --DW0 6 --DW10 1 --dataDirection 2 --dataTransferSize 4096 --dataFile "a.bin"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--devicePath \\.\SCSI1:</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

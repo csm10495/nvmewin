@@ -6,14 +6,19 @@
 
 #include "stdafx.h"
 
-#include "argparse/argparse.hpp"
+#include "../source/nvme.h"
 #include "../source/nvmeIoctl.h"
 
+#include "Cargparse.h"
 #include "Handle.h"
+#include "Util.h"
 
 #include <sstream>
 
 #define DBG(thing) if (debug) {fprintf(stderr, "%-35s = 0x%08x (%-8u) \n", #thing, thing, thing);}
+
+#define GET_NVME_PASSTHRU_IOCTL(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize) __getPassthru(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize); {
+#define FREE_NVME_PASSTHRU_IOCTL(p) free(p);}
 
 std::string getControlCodeString(DWORD controlCode)
 {
@@ -124,10 +129,7 @@ done:
 	return passthru;
 }
 
-#define GET_NVME_PASSTHRU_IOCTL(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize) __getPassthru(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize); {
-#define FREE_NVME_PASSTHRU_IOCTL(p) free(p);}
-
-bool callDeviceIoControl(HANDLE handle, NVME_PASS_THROUGH_IOCTL* passthru, DWORD passThruBufferSize, bool debug)
+bool callDeviceIoControl(HANDLE handle, NVME_PASS_THROUGH_IOCTL* passthru, DWORD passThruBufferSize, bool debug, bool silent)
 {
 	DWORD bytesReturned;
 	bool retVal = DeviceIoControl(
@@ -146,13 +148,13 @@ bool callDeviceIoControl(HANDLE handle, NVME_PASS_THROUGH_IOCTL* passthru, DWORD
 
 	if (!retVal)
 	{
-		fprintf(stderr, "OS Error: %d\n", GetLastError());
+		if (!silent) fprintf(stderr, "OS Error: %d\n", GetLastError());
 		goto done;
 	}
 
 	if (passthru->SrbIoCtrl.ReturnCode != NVME_IOCTL_SUCCESS)
 	{
-		fprintf(stderr, "SrbIoCtrl.ReturnCode Error: %d\n", passthru->SrbIoCtrl.ReturnCode);
+		if (!silent) fprintf(stderr, "SrbIoCtrl.ReturnCode Error: %d\n", passthru->SrbIoCtrl.ReturnCode);
 		retVal = false;
 		goto done;
 	}
@@ -164,7 +166,7 @@ bool callDeviceIoControl(HANDLE handle, NVME_PASS_THROUGH_IOCTL* passthru, DWORD
 
 	if (passthru->CplEntry[3] >> 17 != 0)
 	{
-		fprintf(stderr, "Drive Status Error: 0x%X \n", passthru->CplEntry[3] >> 17);
+		if (!silent) fprintf(stderr, "Drive Status Error: 0x%X \n", passthru->CplEntry[3] >> 17);
 		retVal = false;
 		goto done;
 	}
@@ -218,7 +220,7 @@ done:
 }
 
 bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWORD DW13, DWORD DW14, DWORD DW15, bool nvm,
-	DWORD timeout, DWORD dataDirection, DWORD dataTransferSize, std::string dataFile, std::string devicePath, bool debug, bool noLook)
+	DWORD timeout, DWORD dataDirection, DWORD dataTransferSize, std::string dataFile, std::string devicePath, bool debug, bool noLook, bool silent)
 {
 	bool retVal = true;
 	Handle handle(devicePath);
@@ -226,7 +228,7 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 	DWORD controlCode = NVME_PASS_THROUGH_SRB_IO_CODE;
 	if (noLook)
 		controlCode = NVME_NO_LOOK_PASS_THROUGH;
-	
+
 	DWORD passThruBufferSize = 0;
 	NVME_PASS_THROUGH_IOCTL* passthru = GET_NVME_PASSTHRU_IOCTL(DW0, DW1, DW10, DW11, DW12, DW13, DW14, DW15, nvm, timeout, dataDirection, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize);
 	BYTE* passThruBuffer = (BYTE*)passthru;
@@ -236,8 +238,8 @@ bool nvmePassthru(DWORD DW0, DWORD DW1, DWORD DW10, DWORD DW11, DWORD DW12, DWOR
 		retVal = false;
 		goto done;
 	}
-	
-	retVal = callDeviceIoControl(handle.getHandle(), passthru, passThruBufferSize, debug);
+
+	retVal = callDeviceIoControl(handle.getHandle(), passthru, passThruBufferSize, debug, silent);
 
 	if (retVal)
 	{
@@ -256,58 +258,26 @@ bool nvmeReset(std::string devicePath, bool debug, DWORD timeout)
 	bool retVal = true;
 	Handle handle(devicePath);
 
-	DWORD passThruBufferSize = sizeof(NVME_PASS_THROUGH_IOCTL);
-	BYTE* passThruBuffer = (BYTE*)calloc(passThruBufferSize, 1);
-	NVME_PASS_THROUGH_IOCTL* passthru = (NVME_PASS_THROUGH_IOCTL*)passThruBuffer;
-	DBG(passThruBufferSize);
+	DWORD passThruBufferSize = 0;
+	NVME_PASS_THROUGH_IOCTL* passthru = GET_NVME_PASSTHRU_IOCTL(0, 0, 0, 0, 0, 0, 0, 0, 0, timeout, 0, 0, "", debug, NVME_RESET_DEVICE, passThruBufferSize);
+	BYTE* passThruBuffer = (BYTE*)passthru;
 
-	// Setup SRB
-	passthru->SrbIoCtrl.HeaderLength = sizeof(SRB_IO_CONTROL);
-	memcpy(passthru->SrbIoCtrl.Signature, NVME_SIG_STR, NVME_SIG_STR_LEN);
-	passthru->SrbIoCtrl.Timeout = timeout;
-	passthru->SrbIoCtrl.ControlCode = NVME_RESET_DEVICE;
-	passthru->SrbIoCtrl.Length = passThruBufferSize - sizeof(SRB_IO_CONTROL);
-	DBG(NVME_RESET_DEVICE);
-	DBG(passthru->SrbIoCtrl.Timeout);
-	DBG(passthru->SrbIoCtrl.ControlCode);
-	DBG(passthru->SrbIoCtrl.Length);
-
-	DWORD bytesReturned;
-	retVal = DeviceIoControl(
-		handle.getHandle(),
-		IOCTL_SCSI_MINIPORT,
-		passThruBuffer,
-		passThruBufferSize,
-		passThruBuffer,
-		passThruBufferSize,
-		&bytesReturned,
-		NULL
-	) != 0;
-	DBG(bytesReturned);
-	DBG(passthru->SrbIoCtrl.ReturnCode);
-	DBG(GetLastError());
-
-	if (!retVal)
+	if (!passthru)
 	{
-		fprintf(stderr, "OS Error: %d\n", GetLastError());
-		goto done;
-	}
-
-	if (passthru->SrbIoCtrl.ReturnCode != NVME_IOCTL_SUCCESS)
-	{
-		fprintf(stderr, "SrbIoCtrl.ReturnCode Error: %d\n", passthru->SrbIoCtrl.ReturnCode);
 		retVal = false;
 		goto done;
 	}
 
+	retVal = callDeviceIoControl(handle.getHandle(), passthru, passThruBufferSize, debug, false);
+
 done:
-	free(passThruBuffer);
+	FREE_NVME_PASSTHRU_IOCTL(passthru);
 
 	DBG(retVal);
 	return retVal;
 }
 
-bool nvmeControllerRegister(DWORD timeout, DWORD dataTransferSize, std::string dataFile, std::string devicePath, DWORD dataDirection, bool debug)
+bool nvmeControllerRegisters(DWORD timeout, DWORD dataTransferSize, std::string dataFile, std::string devicePath, DWORD dataDirection, bool debug)
 {
 	bool retVal = true;
 	Handle handle(devicePath);
@@ -436,145 +406,167 @@ done:
 	return retVal;
 }
 
-
-DWORD retrieveDWORDWithDefault(ArgumentParser &parser, std::string key, DWORD _default)
+std::string promptForSelection()
 {
-	try
+	std::vector<std::string> paths;
+
+	for (int i = 0; i < 255; i++)
 	{
-		// for some reason we always need to request a string and manually convert it to long
-		std::string v = parser.retrieve<std::string>(key);
-		if (v.size() == 0)
+		std::string testPath = "\\\\.\\SCSI" + std::to_string(i) + ":";
+		try
 		{
-			throw std::bad_cast();
+			Handle handle(testPath);
+		}
+		catch (...)
+		{
+			continue;
 		}
 
-		if (v[1] == 'x')
+		bool ofa = false;
+		bool csm = false;
+
+		csm = nvmePassthru(6, 0, 1, 0, 0, 0, 0, 0, false, 5, 2, 4096, "ic.bin", testPath, false, true, true);
+		
+		if (!csm)
 		{
-			// hex?
-			std::stringstream s;
-			DWORD d;
-			s << std::hex << v.substr(2);
-			s >> d;
-			v = std::to_string(d);
+			ofa = nvmePassthru(6, 0, 1, 0, 0, 0, 0, 0, false, 5, 2, 4096, "ic.bin", testPath, false, false, true);
 		}
 
-		return (DWORD)atol(v.c_str());
-	}
-	catch (std::exception ex)
-	{
-		return _default;
-	}
-}
-
-std::string retrieveStringWithDefault(ArgumentParser &parser, std::string key, std::string _default)
-{
-	try
-	{
-		return parser.retrieve<std::string>(key);
-	}
-	catch (std::exception ex)
-	{
-		return _default;
-	}
-}
-
-bool retrieveBool(int argc, const char** argv, std::string key)
-{
-	// can't get the parser library to work... so do it manually
-	for (int i = 0; i < argc; i++)
-	{
-		if (std::string(argv[i]) == "--" + key)
+		if (csm || ofa)
 		{
-			return true;
+			std::string model = "?";
+			std::string fw = "?";
+			std::string type = "?";
+			PADMIN_IDENTIFY_CONTROLLER pIc = (PADMIN_IDENTIFY_CONTROLLER)READ_FILE("ic.bin", 4096);
+			model = std::string((char*)pIc->MN, 40);
+			fw = std::string((char*)pIc->FR, 8);
+			CLOSE_FILE(pIc);
+			remove("ic.bin");
+			if (csm)
+			{
+				type = "CSM NVMe Driver";
+			}
+			else if (ofa)
+			{
+				type = "OFA-Compatible Driver";
+			}
+			fprintf(stderr, "%d) %-30s %-8s %-11s %s\n", (int)paths.size(), model.c_str(), fw.c_str(), testPath.c_str(), type.c_str());
+			paths.push_back(testPath);
 		}
+
 	}
-	return false;
+
+	int sel;
+	std::cerr << "Choose an above index: ";
+	std::cin >> sel;
+
+	return paths[sel];
 }
 
 int main(int argc, const char** argv)
 {
-	ArgumentParser parser;
-	parser.addArgument("--DW0", 1);
-	parser.addArgument("--DW1", 1);
-	parser.addArgument("--DW10", 1);
-	parser.addArgument("--DW11", 1);
-	parser.addArgument("--DW12", 1);
-	parser.addArgument("--DW13", 1);
-	parser.addArgument("--DW14", 1);
-	parser.addArgument("--DW15", 1);
-	parser.addArgument("--NVM");
-	parser.addArgument("--debug");
-	parser.addArgument("--timeout", 1);
-	parser.addArgument("--dataDirection", 1);
-	parser.addArgument("--dataTransferSize", 1);
-	parser.addArgument("--dataFile", 1);
-	parser.addArgument("--devicePath", 1, false);
-	parser.addArgument("--noLook");
-	parser.addArgument("--reset");
-	parser.addArgument("--controllerRegisters");
-
-	parser.parse(argc, argv);
-
-	bool doReset = retrieveBool(argc, argv, "reset");
-	bool doControllerRegisters = retrieveBool(argc, argv, "controllerRegisters");
-
-	if (doReset && doControllerRegisters)
+	try
 	{
-		fprintf(stderr, "Can't use --reset and --controllerRegisters together!\n");
-		return EXIT_FAILURE;
+		ArgumentParser parser;
+		parser.add_argument(Argument("DW0", "DWord0", "", "DWord 0 of an NVMe Command", "6", false));
+		parser.add_argument(Argument("DW1", "DWord1", "", "DWord 1 of an NVMe Command", "0", false));
+		parser.add_argument(Argument("DW10", "DWord10", "", "DWord 10 of an NVMe Command", "1", false));
+		parser.add_argument(Argument("DW11", "DWord11", "", "DWord 11 of an NVMe Command", "0", false));
+		parser.add_argument(Argument("DW12", "DWord12", "", "DWord 12 of an NVMe Command", "0", false));
+		parser.add_argument(Argument("DW13", "DWord13", "", "DWord 13 of an NVMe Command", "0", false));
+		parser.add_argument(Argument("DW14", "DWord14", "", "DWord 14 of an NVMe Command", "0", false));
+		parser.add_argument(Argument("DW15", "DWord15", "", "DWord 15 of an NVMe Command", "0", false));
+		parser.add_argument(Argument("nvm", "NVM", "store_true", "If given, send command as NVM instead of Admin", "", false));
+		parser.add_argument(Argument("debug", "debug", "store_true", "If given, Send debug info to stderr", "", false));
+		parser.add_argument(Argument("noLook", "noLook", "store_true", "If given, Use NO_LOOK IOCTL", "", false));
+		parser.add_argument(Argument("timeout", "timeout", "", "Timeout in seconds", "60", false));
+		parser.add_argument(Argument("dataDirection", "dataDirection", "", "0:non data, 1:write, 2:read", "2", false));
+		parser.add_argument(Argument("dataTransferSize", "dataTransferSize", "", "In bytes", "8192", false));
+		parser.add_argument(Argument("dataFile", "dataFile", "", "Location of binary file", "", false));
+		parser.add_argument(Argument("devicePath", "devicePath", "", "Path to device", "", false));
+
+		// Actions
+		parser.add_argument(Argument("passthru", "passthru", "store_true", "If given, Do an NVMe passthru command", "false", false));
+		parser.add_argument(Argument("controllerRegisters", "controllerRegs", "store_true", "If given, target the controller registers", "false", false));
+		parser.add_argument(Argument("reset", "controllerReset", "store_true", "If given, do an NVMe Controller Reset", "false", false));
+
+		parser.parse_args(argv, argc);
+
+		bool passthru = parser.getBooleanValue("passthru");
+		bool controllerRegisters = parser.getBooleanValue("controllerRegisters");
+		bool reset = parser.getBooleanValue("reset");
+
+		// Make sure only one action was given
+		if (!(passthru ^ controllerRegisters ^ reset))
+		{
+			throw std::runtime_error("Give one of the following: passthru, controllerRegisters, reset");
+		}
+
+		bool success = false;
+
+		std::string devicePath = parser.getStringValue("devicePath");
+		if (devicePath.size() == 0)
+		{
+			devicePath = promptForSelection();
+		}
+
+		if (passthru)
+		{
+			success = nvmePassthru(
+				parser.getNumericValue("DW0"),
+				parser.getNumericValue("DW1"),
+				parser.getNumericValue("DW10"),
+				parser.getNumericValue("DW11"),
+				parser.getNumericValue("DW12"),
+				parser.getNumericValue("DW13"),
+				parser.getNumericValue("DW14"),
+				parser.getNumericValue("DW15"),
+				parser.getBooleanValue("NVM"),
+				parser.getNumericValue("timeout"),
+				parser.getNumericValue("dataDirection"),
+				parser.getNumericValue("dataTransferSize"),
+				parser.getStringValue("dataFile"),
+				devicePath,
+				parser.getBooleanValue("debug"),
+				parser.getBooleanValue("noLook"),
+				false
+			);
+		}
+		else if (reset)
+		{
+			success = nvmeReset(
+				devicePath,
+				parser.getBooleanValue("debug"),
+				parser.getNumericValue("timeout")
+			);
+		}
+		else if (controllerRegisters)
+		{
+			success = nvmeControllerRegisters(
+				parser.getNumericValue("timeout"),
+				parser.getNumericValue("dataTransferSize"),
+				parser.getStringValue("dataFile"),
+				devicePath,
+				parser.getNumericValue("dataDirection"),
+				parser.getBooleanValue("debug")
+			);
+		}
+
+
+		if (success)
+		{
+			fprintf(stderr, "Success\n");
+			return EXIT_SUCCESS;
+		}
+		else
+		{
+			fprintf(stderr, "Failure\n");
+			return EXIT_FAILURE;
+		}
 	}
-
-	bool success = false;
-
-	if (doReset)
+	catch (std::exception ex)
 	{
-		success = nvmeReset(
-			parser.retrieve<std::string>("devicePath"),
-			retrieveBool(argc, argv, "debug"),
-			retrieveDWORDWithDefault(parser, "timeout", 60)
-		);
-	}
-	else if (doControllerRegisters)
-	{
-		success = nvmeControllerRegister(
-			retrieveDWORDWithDefault(parser, "timeout", 60),
-			retrieveDWORDWithDefault(parser, "dataTransferSize", 5002),
-			retrieveStringWithDefault(parser, "dataFile", ""),
-			parser.retrieve<std::string>("devicePath"),
-			retrieveDWORDWithDefault(parser, "dataDirection", NVME_FROM_DEV_TO_HOST),
-			retrieveBool(argc, argv, "debug")
-		);
-	}
-	else
-	{
-		success = nvmePassthru(
-			retrieveDWORDWithDefault(parser, "DW0", 0),
-			retrieveDWORDWithDefault(parser, "DW1", 0),
-			retrieveDWORDWithDefault(parser, "DW10", 0),
-			retrieveDWORDWithDefault(parser, "DW11", 0),
-			retrieveDWORDWithDefault(parser, "DW12", 0),
-			retrieveDWORDWithDefault(parser, "DW13", 0),
-			retrieveDWORDWithDefault(parser, "DW14", 0),
-			retrieveDWORDWithDefault(parser, "DW15", 0),
-			retrieveBool(argc, argv, "NVM"),
-			retrieveDWORDWithDefault(parser, "timeout", 60),
-			retrieveDWORDWithDefault(parser, "dataDirection", 2),
-			retrieveDWORDWithDefault(parser, "dataTransferSize", 4096),
-			retrieveStringWithDefault(parser, "dataFile", ""),
-			parser.retrieve<std::string>("devicePath"),
-			retrieveBool(argc, argv, "debug"),
-			retrieveBool(argc, argv, "noLook")
-		);
-	}
-
-	if (success)
-	{
-		fprintf(stderr, "Success\n");
-		return EXIT_SUCCESS;
-	}
-	else
-	{
-		fprintf(stderr, "Failure\n");
+		fprintf(stderr, "Exception Caught! : %s\n", ex.what());
 		return EXIT_FAILURE;
 	}
 }

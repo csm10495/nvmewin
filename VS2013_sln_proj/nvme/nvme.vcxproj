@@ -170,7 +170,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\wdm.lib;$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\scsiwmi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
       <CatalogFileName>nvme64.cat</CatalogFileName>
     </Inf>
     <Mofcomp>
@@ -197,7 +197,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\wdm.lib;$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\scsiwmi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
       <CatalogFileName>nvme64.cat</CatalogFileName>
     </Inf>
     <Mofcomp>
@@ -222,7 +222,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\wdm.lib;$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\scsiwmi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
       <CatalogFileName>nvme64.cat</CatalogFileName>
     </Inf>
     <Mofcomp>
@@ -247,7 +247,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\wdm.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)\ntoskrnl.lib;$(DDK_LIB_PATH)\hal.lib;$(DDK_LIB_PATH)\wmilib.lib;$(DDK_LIB_PATH)\scsiwmi.lib</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Inf>
       <CatalogFileName>nvme64.cat</CatalogFileName>
@@ -274,7 +274,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\wdm.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)\ntoskrnl.lib;$(DDK_LIB_PATH)\hal.lib;$(DDK_LIB_PATH)\wmilib.lib;$(DDK_LIB_PATH)\scsiwmi.lib</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Inf>
       <CatalogFileName>nvme64.cat</CatalogFileName>
@@ -307,7 +307,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\wdm.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)\ntoskrnl.lib;$(DDK_LIB_PATH)\hal.lib;$(DDK_LIB_PATH)\wmilib.lib;$(DDK_LIB_PATH)\scsiwmi.lib</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Inf>
       <CatalogFileName>nvme64.cat</CatalogFileName>
@@ -334,7 +334,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\wdm.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)\ntoskrnl.lib;$(DDK_LIB_PATH)\hal.lib;$(DDK_LIB_PATH)\wmilib.lib;$(DDK_LIB_PATH)\scsiwmi.lib</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Inf>
       <CatalogFileName>nvme86.cat</CatalogFileName>
@@ -361,7 +361,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\wdm.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)\ntoskrnl.lib;$(DDK_LIB_PATH)\hal.lib;$(DDK_LIB_PATH)\wmilib.lib;$(DDK_LIB_PATH)\scsiwmi.lib</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Inf>
       <CatalogFileName>nvme86.cat</CatalogFileName>
@@ -389,6 +389,7 @@
     </Link>
     <Inf>
       <CatalogFileName>nvme86.cat</CatalogFileName>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Mofcomp>
       <WmiSyntaxCheck>true</WmiSyntaxCheck>
@@ -413,6 +414,7 @@
     </Link>
     <Inf>
       <CatalogFileName>nvme86.cat</CatalogFileName>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Mofcomp>
       <WmiSyntaxCheck>true</WmiSyntaxCheck>
@@ -436,7 +438,7 @@
       <AdditionalDependencies>$(DDK_LIB_PATH)\storport.lib;$(DDK_LIB_PATH)\wdm.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)\ntoskrnl.lib;$(DDK_LIB_PATH)\hal.lib;$(DDK_LIB_PATH)\wmilib.lib;$(DDK_LIB_PATH)\scsiwmi.lib</AdditionalDependencies>
     </Link>
     <Inf>
-      <TimeStamp>1.4.0.0</TimeStamp>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Inf>
       <CatalogFileName>nvme86.cat</CatalogFileName>
@@ -464,6 +466,7 @@
     </Link>
     <Inf>
       <CatalogFileName>nvme86.cat</CatalogFileName>
+      <TimeStamp>1.5.0.0</TimeStamp>
     </Inf>
     <Mofcomp>
       <WmiSyntaxCheck>true</WmiSyntaxCheck>

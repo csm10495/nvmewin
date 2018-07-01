@@ -117,7 +117,7 @@ AddService = nvme, 0x00000002 , nvme_Service_Inst, nvme_EventLog_Inst
 ; Localizable Strings
 ;
 diskId1 = "NVMe Installation Disk"
-CommNvme.DeviceDesc = "Community OFA NVMe 1.2 Storport Miniport"
+CommNvme.DeviceDesc = "csm10495 Open Source NVMe Driver"
 COMM = "Community"
 
 ;

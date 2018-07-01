@@ -65,8 +65,7 @@ void Handle::setup()
 
 		if (handle == INVALID_HANDLE_VALUE)
 		{
-			fprintf(stderr, "Could not create handle to: %s\n", path.c_str());
-			throw std::runtime_error("");
+			throw std::runtime_error("Could not create handle to " + path);
 		}
 	}
 }

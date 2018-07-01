@@ -3082,7 +3082,7 @@ BOOLEAN NVMeHandleNVMePassthrough(
 
 #ifdef ENABLE_CSM_IOCTL
 	// If the command was Identify Controller and we have a model override, override it in the return data
-	PADMIN_IDENTIFY_COMMAND_DW10 pDw10 = (PADMIN_IDENTIFY_COMMAND_DW10)pNvmePtIoctl->NVMeCmd[10];
+	PADMIN_IDENTIFY_COMMAND_DW10 pDw10 = (PADMIN_IDENTIFY_COMMAND_DW10)&pNvmePtIoctl->NVMeCmd[10];
 	PNVME_DEVICE_EXTENSION pDevExt = (PNVME_DEVICE_EXTENSION)pNVMeDevExt;
 
 	if (pNvmeCmdDW0->OPC == ADMIN_IDENTIFY && pDw10->CNS == IDENTIFY_CNTLR && pDevExt->UseModelOverride)
