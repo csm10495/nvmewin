@@ -32,6 +32,10 @@ std::string getControlCodeString(DWORD controlCode)
 		return "NVME_NO_LOOK_PASS_THROUGH";
 	case NVME_CONTROLLER_REGISTERS:
 		return "NVME_CONTROLLER_REGISTERS";
+	case NVME_IC_MN_OVERRIDE_CONTROL:
+		return "NVME_IC_MN_OVERRIDE_CONTROL";
+	case NVME_IC_MN_OVERRIDE_RESET:
+		return "NVME_IC_MN_OVERRIDE_RESET";
 	}
 	return "Unknown";
 }
@@ -277,6 +281,57 @@ done:
 	return retVal;
 }
 
+bool overwriteModel(std::string devicePath, std::string model, bool debug)
+{
+	bool retVal = true;
+	Handle handle(devicePath);
+
+	DWORD passThruBufferSize = 0;
+	constexpr size_t mnSize = sizeof(ADMIN_IDENTIFY_CONTROLLER().MN);
+	model = model.substr(0, mnSize);
+	NVME_PASS_THROUGH_IOCTL* passthru = GET_NVME_PASSTHRU_IOCTL(0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1, mnSize, "", debug, NVME_IC_MN_OVERRIDE_CONTROL, passThruBufferSize);
+	BYTE* passThruBuffer = (BYTE*)passthru;
+
+	if (!passthru)
+	{
+		retVal = false;
+		goto done;
+	}
+
+	memcpy(&passthru->DataBuffer, model.c_str(), model.size());
+	retVal = callDeviceIoControl(handle.getHandle(), passthru, passThruBufferSize, debug, false);
+
+done:
+	FREE_NVME_PASSTHRU_IOCTL(passthru);
+
+	DBG(retVal);
+	return retVal;
+}
+
+bool overwriteModelReset(std::string devicePath, bool debug)
+{
+	bool retVal = true;
+	Handle handle(devicePath);
+
+	DWORD passThruBufferSize = 0;
+	NVME_PASS_THROUGH_IOCTL* passthru = GET_NVME_PASSTHRU_IOCTL(0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1, 0, "", debug, NVME_IC_MN_OVERRIDE_RESET, passThruBufferSize);
+	BYTE* passThruBuffer = (BYTE*)passthru;
+
+	if (!passthru)
+	{
+		retVal = false;
+		goto done;
+	}
+
+	retVal = callDeviceIoControl(handle.getHandle(), passthru, passThruBufferSize, debug, false);
+
+done:
+	FREE_NVME_PASSTHRU_IOCTL(passthru);
+
+	DBG(retVal);
+	return retVal;
+}
+
 bool nvmeControllerRegisters(DWORD timeout, DWORD dataTransferSize, std::string dataFile, std::string devicePath, DWORD dataDirection, bool debug)
 {
 	bool retVal = true;
@@ -484,22 +539,27 @@ int main(int argc, const char** argv)
 		parser.add_argument(Argument("dataTransferSize", "dataTransferSize", "", "In bytes", "8192", false));
 		parser.add_argument(Argument("dataFile", "dataFile", "", "Location of binary file", "", false));
 		parser.add_argument(Argument("devicePath", "devicePath", "", "Path to device", "", false));
+		parser.add_argument(Argument("model", "modelOverride", "", "Model to override in Identify Controller", "", false));
 
 		// Actions
 		parser.add_argument(Argument("passthru", "passthru", "store_true", "If given, Do an NVMe passthru command", "false", false));
 		parser.add_argument(Argument("controllerRegisters", "controllerRegs", "store_true", "If given, target the controller registers", "false", false));
 		parser.add_argument(Argument("reset", "controllerReset", "store_true", "If given, do an NVMe Controller Reset", "false", false));
+		parser.add_argument(Argument("override", "overrideModel", "store_true", "If given, Overwrite the model returned in Identify Controller", "false", false));
+		parser.add_argument(Argument("overrideReset", "overrideModelReset", "store_true", "If given, Reset the override returned in Identify Controller", "false", false));
 
 		parser.parse_args(argv, argc);
 
 		bool passthru = parser.getBooleanValue("passthru");
 		bool controllerRegisters = parser.getBooleanValue("controllerRegisters");
 		bool reset = parser.getBooleanValue("reset");
+		bool overrideModel = parser.getBooleanValue("overrideModel");
+		bool overrideReset = parser.getBooleanValue("overrideReset");
 
 		// Make sure only one action was given
-		if (!(passthru ^ controllerRegisters ^ reset))
+		if (!(passthru ^ controllerRegisters ^ reset ^ overrideModel ^ overrideReset))
 		{
-			throw std::runtime_error("Give one of the following: passthru, controllerRegisters, reset");
+			throw std::runtime_error("Give one of the following: passthru, controllerRegisters, reset, overrideModel, overrideReset");
 		}
 
 		bool success = false;
@@ -551,7 +611,21 @@ int main(int argc, const char** argv)
 				parser.getBooleanValue("debug")
 			);
 		}
-
+		else if (overrideModel)
+		{
+			success = overwriteModel(
+				devicePath,
+				parser.getStringValue("modelOverride"),
+				parser.getBooleanValue("debug")
+			);
+		}
+		else if (overrideReset)
+		{
+			success = overwriteModelReset(
+				devicePath,
+				parser.getBooleanValue("debug")
+			);
+		}
 
 		if (success)
 		{
