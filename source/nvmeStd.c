@@ -456,8 +456,21 @@ NVMeFindAdapter(
 	pAE->pPCI = pPCI;
 	pPCI->WmiDataProvider = TRUE;
 
-
 	InitializeWmiContext(pAE);
+
+#ifdef ENABLE_CSM_IOCTL
+	ULONG result = StorPortGetBusData(
+		(PVOID)pAE,
+		PCIConfiguration,
+		pPCI->SystemIoBusNumber,
+		pPCI->SlotNumber,
+		&pAE->pciCommonHeader,
+		sizeof(pAE->pciCommonHeader)
+	);
+		StorPortDebugPrint(INFO,
+			"StorPortGetBusData()... retuned = %d.\n",
+			(int)result);
+#endif
 
 	/* Confirm with Storport that device is found */
 	return(SP_RETURN_FOUND);
@@ -2149,6 +2162,7 @@ void NVMeStartIoProcessIoctl(
 					pNvmePtIoctl->DataBuffer,
 					sizeof(NVMe_CONTROLLER_REGISTERS)
 				);
+
 			}
 			else if (pNvmePtIoctl->Direction == NVME_FROM_DEV_TO_HOST && pNvmePtIoctl->ReturnBufferLen >= sizeof(NVME_PASS_THROUGH_IOCTL) + sizeof(NVMe_CONTROLLER_REGISTERS))
 			{
@@ -2171,6 +2185,51 @@ void NVMeStartIoProcessIoctl(
 				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INSUFFICIENT_IN_BUFFER;
 			}
 			else if (pNvmePtIoctl->Direction == NVME_FROM_DEV_TO_HOST && pNvmePtIoctl->ReturnBufferLen < sizeof(NVME_PASS_THROUGH_IOCTL) + sizeof(NVMe_CONTROLLER_REGISTERS))
+			{
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INSUFFICIENT_OUT_BUFFER;
+			}
+			else
+			{
+				// No idea what happened
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INTERNAL_ERROR;
+			}
+
+			StorPortDebugPrint(INFO,
+				"NVMeStartIoProcessIoctl: about to notify storport that we're done.\n");
+
+			// Tell StorPort that everything is fine to give the user back a failing return code on failure (or 0 on success)
+			pSrb->SrbStatus = SRB_STATUS_SUCCESS;
+			IO_StorPortNotification(RequestComplete, pAdapterExtension, pSrb);
+			return;
+		case NVME_PCI_REGISTERS:
+			/*
+			* Read the PCI configuration space and give them back to the user
+			*/
+			StorPortDebugPrint(INFO,
+				"NVMeStartIoProcessIoctl: in NVME_PCI_REGISTERS now.\n");
+			pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_SUCCESS;
+			
+			if (pNvmePtIoctl->Direction == NVME_FROM_HOST_TO_DEV && pNvmePtIoctl->DataBufferLen >= sizeof(PCI_COMMON_HEADER))
+			{
+				// No ability to write these registers... we don't have them mem-mapped
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INVALID_DIRECTION_SPECIFIED;
+			}
+			else if (pNvmePtIoctl->Direction == NVME_FROM_DEV_TO_HOST && pNvmePtIoctl->ReturnBufferLen >= sizeof(NVME_PASS_THROUGH_IOCTL) + sizeof(PCI_COMMON_HEADER))
+			{
+				// Handle reads to read the register data
+				StorPortDebugPrint(INFO,
+					"NVMeStartIoProcessIoctl: About to memcpy back pAdapterExtension->pciCommonHeader.\n");
+				memcpy(&pNvmePtIoctl->DataBuffer, &pAdapterExtension->pciCommonHeader, sizeof(PCI_COMMON_HEADER));
+			}
+			else if (pNvmePtIoctl->Direction >= NVME_BI_DIRECTION || pNvmePtIoctl->Direction == NVME_NO_DATA_TX)
+			{
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INVALID_DIRECTION_SPECIFIED;
+			}
+			else if (pNvmePtIoctl->Direction == NVME_FROM_HOST_TO_DEV && pNvmePtIoctl->DataBufferLen < sizeof(PCI_COMMON_HEADER))
+			{
+				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INSUFFICIENT_IN_BUFFER;
+			}
+			else if (pNvmePtIoctl->Direction == NVME_FROM_DEV_TO_HOST && pNvmePtIoctl->ReturnBufferLen < sizeof(NVME_PASS_THROUGH_IOCTL) + sizeof(PCI_COMMON_HEADER))
 			{
 				pNvmePtIoctl->SrbIoCtrl.ReturnCode = NVME_IOCTL_INSUFFICIENT_OUT_BUFFER;
 			}

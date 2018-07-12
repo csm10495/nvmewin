@@ -461,6 +461,36 @@ done:
 	return retVal;
 }
 
+bool getPciRegisters(DWORD dataTransferSize, std::string dataFile, std::string devicePath, bool debug)
+{
+	bool retVal = true;
+	Handle handle(devicePath);
+
+	DWORD controlCode = NVME_PCI_REGISTERS;
+	DWORD passThruBufferSize = 0;
+	NVME_PASS_THROUGH_IOCTL* passthru = GET_NVME_PASSTHRU_IOCTL(0, 0, 0, 0, 0, 0, 0, 0, false, 5, NVME_FROM_DEV_TO_HOST, dataTransferSize, dataFile, debug, controlCode, passThruBufferSize);
+	BYTE* passThruBuffer = (BYTE*)passthru;
+
+	if (!passthru)
+	{
+		retVal = false;
+		goto done;
+	}
+
+	retVal = callDeviceIoControl(handle.getHandle(), passthru, passThruBufferSize, debug, false);
+
+	if (retVal)
+	{
+		processOutputData(passthru, dataFile);
+	}
+
+done:
+	FREE_NVME_PASSTHRU_IOCTL(passthru);
+
+	DBG(retVal);
+	return retVal;
+}
+
 std::string promptForSelection()
 {
 	std::vector<std::string> paths;
@@ -543,6 +573,7 @@ int main(int argc, const char** argv)
 
 		// Actions
 		parser.add_argument(Argument("passthru", "passthru", "store_true", "If given, Do an NVMe passthru command", "false", false));
+		parser.add_argument(Argument("pciRegisters", "pciRegs", "store_true", "If given, retrieve the pci registers header", "false", false));
 		parser.add_argument(Argument("controllerRegisters", "controllerRegs", "store_true", "If given, target the controller registers", "false", false));
 		parser.add_argument(Argument("reset", "controllerReset", "store_true", "If given, do an NVMe Controller Reset", "false", false));
 		parser.add_argument(Argument("override", "overrideModel", "store_true", "If given, Overwrite the model returned in Identify Controller", "false", false));
@@ -551,15 +582,16 @@ int main(int argc, const char** argv)
 		parser.parse_args(argv, argc);
 
 		bool passthru = parser.getBooleanValue("passthru");
+		bool pciRegisters = parser.getBooleanValue("pciRegisters");
 		bool controllerRegisters = parser.getBooleanValue("controllerRegisters");
 		bool reset = parser.getBooleanValue("reset");
 		bool overrideModel = parser.getBooleanValue("overrideModel");
 		bool overrideReset = parser.getBooleanValue("overrideReset");
 
 		// Make sure only one action was given
-		if (!(passthru ^ controllerRegisters ^ reset ^ overrideModel ^ overrideReset))
+		if (!(passthru ^ controllerRegisters ^ reset ^ overrideModel ^ overrideReset ^ pciRegisters))
 		{
-			throw std::runtime_error("Give one of the following: passthru, controllerRegisters, reset, overrideModel, overrideReset");
+			throw std::runtime_error("Give one of the following: passthru, controllerRegisters, reset, overrideModel, overrideReset, pciRegisters");
 		}
 
 		bool success = false;
@@ -608,6 +640,15 @@ int main(int argc, const char** argv)
 				parser.getStringValue("dataFile"),
 				devicePath,
 				parser.getNumericValue("dataDirection"),
+				parser.getBooleanValue("debug")
+			);
+		}
+		else if (pciRegisters)
+		{
+			success = getPciRegisters(
+				parser.getNumericValue("dataTransferSize"),
+				parser.getStringValue("dataFile"),
+				devicePath,
 				parser.getBooleanValue("debug")
 			);
 		}

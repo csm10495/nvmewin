@@ -1085,6 +1085,9 @@ typedef struct _nvme_device_extension
 	/* For overriding the model number in Identify Controller calls*/
 	CHAR ModelOverride[40];
 	BOOLEAN UseModelOverride;
+
+	/* Save the PCI Registers */
+	PCI_COMMON_HEADER pciCommonHeader;
 #endif
 } NVME_DEVICE_EXTENSION, *PNVME_DEVICE_EXTENSION;
 
