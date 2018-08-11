@@ -187,7 +187,15 @@ public:
 
 	unsigned long getNumericValue(std::string name)
 	{
-		return std::stoul(parsedMap[name]);
+		std::string val = parsedMap[name];
+
+		int base = 10;
+		if (val.size() > 2 && val[0] == '0' && val[1] == 'x')
+		{
+			base = 16;
+		}
+
+		return std::stoul(val, 0, base);
 	}
 
 	std::string getStringValue(std::string name)
