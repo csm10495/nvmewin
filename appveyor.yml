@@ -11,17 +11,9 @@ build:
   project: nvmew/nvmew.sln
   verbosity: minimal
 artifacts:
-  - path: nvmew\x64\Release\nvmew.exe
-    name: x64 Release
-    
   - path: nvmew\Release\nvmew.exe
     name: x86 Release    
-    
-  - path: nvmew\Debug\nvmew.exe
-    name: x86 Debug    
-    
-  - path: nvmew\x64\Debug\nvmew.exe
-    name: x64 Debug
+
 deploy:
   provider: GitHub
   auth_token:
