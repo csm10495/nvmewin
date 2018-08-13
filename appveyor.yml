@@ -10,3 +10,24 @@ clone_depth: 10
 build:
   project: nvmew/nvmew.sln
   verbosity: minimal
+artifacts:
+  - path: nvmew\x64\Release\nvmew.exe
+    name: x64 Release
+    
+  - path: nvmew\Release\nvmew.exe
+    name: x86 Release    
+    
+  - path: nvmew\Debug\nvmew.exe
+    name: x86 Debug    
+    
+  - path: nvmew\x64\Debug\nvmew.exe
+    name: x64 Debug
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: MkEQ0qlYuJ9QhRNCsXoGXjTZrp/qMOiVDREvSP1DjQ+wEe6K9LM1w3SynDwDB1PW
+  artifact: nvmew\**\nvmew.exe
+  draft: false
+  prerelease: false
+  on:
+    branch: master
